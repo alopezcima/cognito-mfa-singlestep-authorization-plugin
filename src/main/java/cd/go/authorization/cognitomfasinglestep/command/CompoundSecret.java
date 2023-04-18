@@ -1,12 +1,12 @@
 /*
  * Copyright 2019 Banco Bilbao Vizcaya Argentaria, S.A.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package cd.go.authorization.cognitomfasinglestep;
+package cd.go.authorization.cognitomfasinglestep.command;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class CompoundSecretSplitter {
+public class CompoundSecret {
     private final Pattern format = Pattern.compile("^(.*)(\\d{6})$", Pattern.DOTALL);
     private final String password;
     private final String totp;
 
-    public CompoundSecretSplitter(String secret) {
+    public CompoundSecret(String secret) {
         Matcher matcher = format.matcher(secret);
         if (matcher.matches()) {
             password = matcher.group(1);

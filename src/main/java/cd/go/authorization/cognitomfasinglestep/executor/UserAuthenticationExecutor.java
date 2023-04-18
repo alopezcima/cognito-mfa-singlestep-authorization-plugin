@@ -16,18 +16,20 @@
 
 package cd.go.authorization.cognitomfasinglestep.executor;
 
-import cd.go.authorization.cognitomfasinglestep.Authenticator;
+import cd.go.authorization.cognitomfasinglestep.command.Authenticator;
 import cd.go.authorization.cognitomfasinglestep.model.AuthConfig;
-import cd.go.authorization.cognitomfasinglestep.model.Credentials;
 import cd.go.authorization.cognitomfasinglestep.model.AuthenticationResponse;
+import cd.go.authorization.cognitomfasinglestep.model.Credentials;
 import cd.go.authorization.cognitomfasinglestep.model.RoleConfig;
-
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse.SUCCESS_RESPONSE_CODE;
 
@@ -52,11 +54,9 @@ public class UserAuthenticationExecutor implements RequestExecutor {
         Map<String, Object> userMap = new HashMap<>();
         if (authenticationResponse != null) {
             userMap.put("user", authenticationResponse.getUser());
-            final List<String> assignedRoles = new ArrayList<>();
-            userMap.put("roles", assignedRoles);
+            userMap.put("roles", new ArrayList<String>());
         }
 
-        DefaultGoPluginApiResponse response = new DefaultGoPluginApiResponse(SUCCESS_RESPONSE_CODE, GSON.toJson(userMap));
-        return response;
+        return new DefaultGoPluginApiResponse(SUCCESS_RESPONSE_CODE, GSON.toJson(userMap));
     }
 }

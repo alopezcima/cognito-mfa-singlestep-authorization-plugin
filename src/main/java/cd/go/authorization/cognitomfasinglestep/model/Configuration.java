@@ -18,6 +18,8 @@ package cd.go.authorization.cognitomfasinglestep.model;
 
 import cd.go.authorization.cognitomfasinglestep.annotation.MetadataHelper;
 import cd.go.authorization.cognitomfasinglestep.annotation.ProfileField;
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -47,6 +49,10 @@ public class Configuration {
 
     public String getRegionName() {
         return regionName;
+    }
+
+    public AWSCognitoIdentityProvider getCognitoIDPProvider() {
+        return AWSCognitoIdentityProviderClientBuilder.standard().withRegion(this.regionName).build();
     }
 
     public static List<Map<String, String>> validate(Map<String, String> properties) {

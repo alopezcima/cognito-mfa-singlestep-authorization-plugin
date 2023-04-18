@@ -22,7 +22,6 @@ import com.amazonaws.services.cognitoidp.model.GetUserResult;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Attr;
 
 import java.util.List;
 
@@ -111,8 +110,8 @@ public class User {
     @Override
     public String toString() {
         return new StringBuilder("User@{username=").append(username)
-                .append(", displayName=").append(displayName)
-                .append(", emailId=").append(emailId)
-                .append("}").toString();
+            .append(", displayName=").append(displayName)
+            .append(", emailId=").append(emailId)
+            .append("}").toString();
     }
 }

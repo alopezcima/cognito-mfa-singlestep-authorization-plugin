@@ -19,14 +19,13 @@ package cd.go.authorization.cognitomfasinglestep.model;
 import cd.go.authorization.cognitomfasinglestep.exception.InvalidUsernameException;
 import com.amazonaws.services.cognitoidp.model.AttributeType;
 import com.amazonaws.services.cognitoidp.model.GetUserResult;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.is;
 import org.junit.Test;
-import org.w3c.dom.Attr;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class UserTest {
     @Test

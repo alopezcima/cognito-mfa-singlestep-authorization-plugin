@@ -16,7 +16,7 @@
 
 package cd.go.authorization.cognitomfasinglestep.executor;
 
-import cd.go.authorization.cognitomfasinglestep.Authenticator;
+import cd.go.authorization.cognitomfasinglestep.command.Authenticator;
 import org.junit.Ignore;
 import org.junit.Test;
 
