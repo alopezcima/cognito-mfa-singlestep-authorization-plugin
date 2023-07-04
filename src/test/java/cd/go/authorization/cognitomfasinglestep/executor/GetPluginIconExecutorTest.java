@@ -20,12 +20,11 @@ import cd.go.authorization.cognitomfasinglestep.utils.Util;
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.apache.commons.codec.binary.Base64;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetPluginIconExecutorTest {
 
@@ -33,8 +32,11 @@ public class GetPluginIconExecutorTest {
     public void shouldReturnsPluginIcon() throws Exception {
         GoPluginApiResponse response = new GetPluginIconExecutor().execute();
         HashMap<String, String> hashMap = new Gson().fromJson(response.responseBody(), HashMap.class);
-        assertThat(hashMap.size(), is(2));
-        assertThat(hashMap.get("content_type"), is("image/svg+xml"));
-        assertThat(Util.readResourceBytes("/aws-cognito.svg"), is(Base64.decodeBase64(hashMap.get("data"))));
+        assertThat(hashMap.size())
+            .isEqualTo(2);
+        assertThat(hashMap.get("content_type"))
+            .isEqualTo("image/svg+xml");
+        assertThat(Util.readResourceBytes("/aws-cognito.svg"))
+            .isEqualTo(Base64.decodeBase64(hashMap.get("data")));
     }
 }

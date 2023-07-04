@@ -17,30 +17,34 @@
 package cd.go.authorization.cognitomfasinglestep.command;
 
 import cd.go.authorization.cognitomfasinglestep.cognito.CognitoSingleStepLoginManager;
-import cd.go.authorization.cognitomfasinglestep.model.*;
+import cd.go.authorization.cognitomfasinglestep.model.AuthConfig;
+import cd.go.authorization.cognitomfasinglestep.model.AuthenticationResponse;
+import cd.go.authorization.cognitomfasinglestep.model.Configuration;
+import cd.go.authorization.cognitomfasinglestep.model.Credentials;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 
 public class Authenticator {
-    public AuthenticationResponse authenticate(Credentials credentials, List<AuthConfig> authConfigs) {
+    private final CognitoSingleStepLoginManager loginManager;
+
+    public Authenticator(AuthConfig authConfig) {
+        Configuration config = authConfig.getConfiguration();
+        loginManager = new CognitoSingleStepLoginManager(config.getUserPoolId(), config.getClientId(), config.getAppSecret(), config.getRegionName());
+    }
+
+    public Optional<AuthenticationResponse> authenticate(Credentials credentials) {
         try {
             CompoundSecret secret = new CompoundSecret(credentials.getPassword());
-            for (AuthConfig authConfig : authConfigs) {
-                if (authConfig.getId().equals(COGNITO_AUTH_CONFIG)) {
-                    Configuration config = authConfig.getConfiguration();
-                    CognitoSingleStepLoginManager loginManager = new CognitoSingleStepLoginManager(config);
-                    User user = loginManager.login(credentials.getUsername(), secret.getPassword(), secret.getTOTP());
-                    if (user == null) {
-                        return null;
-                    }
-                    return new AuthenticationResponse(user, authConfig);
-                }
-            }
-            return null;
+            return loginManager.login(credentials.getUsername(), secret.getPassword(), secret.getTOTP())
+                .map(user -> new AuthenticationResponse(user, new ArrayList<>()));
         } catch (IllegalArgumentException e) {
-            return null;
+            return Optional.empty();
         }
     }
 
-    private static final String COGNITO_AUTH_CONFIG = "cognito";
+    public boolean existUser(String username) {
+        return loginManager.isValidUser(username);
+    }
+
 }

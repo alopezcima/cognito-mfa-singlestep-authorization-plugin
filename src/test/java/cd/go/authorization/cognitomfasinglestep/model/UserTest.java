@@ -19,13 +19,13 @@ package cd.go.authorization.cognitomfasinglestep.model;
 import cd.go.authorization.cognitomfasinglestep.exception.InvalidUsernameException;
 import com.amazonaws.services.cognitoidp.model.AttributeType;
 import com.amazonaws.services.cognitoidp.model.GetUserResult;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserTest {
     @Test
@@ -34,14 +34,15 @@ public class UserTest {
         cognitouser.setUsername("USERNAME");
 
         User gocduser = new User(cognitouser);
-        assertThat(gocduser.getUsername(), is("USERNAME"));
+        assertThat(gocduser.getUsername())
+            .isEqualTo("USERNAME");
 
     }
 
-    @Test(expected = InvalidUsernameException.class)
+    @Test
     public void shouldThrowIfNoUsername() {
         GetUserResult cognitouser = new GetUserResult();
-        User gocduser = new User(cognitouser);
+        assertThrows(InvalidUsernameException.class, () -> new User(cognitouser));
     }
 
     @Test
@@ -67,7 +68,9 @@ public class UserTest {
 
         User gocduser = new User(cognitouser);
 
-        assertThat(gocduser.getDisplayName(), is("DISPLAY_NAME"));
-        assertThat(gocduser.getEmailId(), is("EMAIL"));
+        assertThat(gocduser.getDisplayName())
+            .isEqualTo("DISPLAY_NAME");
+        assertThat(gocduser.getEmailId())
+            .isEqualTo("EMAIL");
     }
 }

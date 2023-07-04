@@ -22,22 +22,23 @@ import cd.go.authorization.cognitomfasinglestep.model.Configuration;
 import cd.go.authorization.cognitomfasinglestep.utils.Util;
 import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class GetAuthConfigViewExecutorTest {
 
     @Test
     public void shouldRenderTheTemplateInJSON() throws Exception {
         GoPluginApiResponse response = new GetAuthConfigViewExecutor().execute();
-        assertThat(response.responseCode(), is(200));
-        Map<String, String> hashSet = new Gson().fromJson(response.responseBody(), HashMap.class);
-        assertThat(hashSet, hasEntry("template", Util.readResource("/auth-config.template.html")));
+        assertThat(response.responseCode())
+            .isEqualTo(200);
+        Map<String, String> json = new Gson().fromJson(response.responseBody(), HashMap.class);
+        assertThat(json)
+            .containsEntry("template", Util.readResource("/auth-config.template.html"));
     }
 
     @Test
@@ -45,11 +46,13 @@ public class GetAuthConfigViewExecutorTest {
         String template = Util.readResource("/auth-config.template.html");
 
         for (ProfileMetadata field : MetadataHelper.getMetadata(Configuration.class)) {
-            assertThat(template, containsString("ng-model=\"" + field.getKey() + "\""));
-            assertThat(template, containsString("<span class=\"form_error form-error\" ng-class=\"{'is-visible': GOINPUTNAME[" +
-                field.getKey() + "].$error.server}\" ng-show=\"GOINPUTNAME[" +
-                field.getKey() + "].$error.server\">{{GOINPUTNAME[" +
-                field.getKey() + "].$error.server}}</span>"));
+            assertThat(template)
+                .contains("ng-model=\"" + field.getKey() + "\"");
+            assertThat(template)
+                .contains("<span class=\"form_error form-error\" ng-class=\"{'is-visible': GOINPUTNAME[" +
+                    field.getKey() + "].$error.server}\" ng-show=\"GOINPUTNAME[" +
+                    field.getKey() + "].$error.server\">{{GOINPUTNAME[" +
+                    field.getKey() + "].$error.server}}</span>");
         }
     }
 }

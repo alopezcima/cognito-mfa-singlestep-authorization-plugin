@@ -16,38 +16,44 @@
 
 package cd.go.authorization.cognitomfasinglestep.command;
 
-import org.junit.Test;
 
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CompoundSecretTest {
     @Test
     public void shouldSplitPasswordAndTOTP() throws Exception {
         CompoundSecret secret = new CompoundSecret("pass123456");
-        assertThat(secret.getPassword(), is("pass"));  // TODO: Add explanation about failure
-        assertThat(secret.getTOTP(), is("123456"));
+        assertThat(secret.getPassword())
+            .isEqualTo("pass");  // TODO: Add explanation about failure
+        assertThat(secret.getTOTP())
+            .isEqualTo("123456");
     }
 
     @Test
     public void shouldSplitEmptyPasswordAndTOTP() throws Exception {
         CompoundSecret secret = new CompoundSecret("123456");
-        assertThat(secret.getPassword(), is(""));
-        assertThat(secret.getTOTP(), is("123456"));
+        assertThat(secret.getPassword())
+            .isEqualTo("");
+        assertThat(secret.getTOTP())
+            .isEqualTo("123456");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void throwsOnEmptySecret() throws Exception {
-        CompoundSecret secret = new CompoundSecret("");
+    @Test
+    public void throwsOnEmptySecret() {
+        assertThrows(IllegalArgumentException.class, () -> new CompoundSecret(""));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void throwsOnTooShortSecret() throws Exception {
-        CompoundSecret secret = new CompoundSecret("23456");
+    @Test
+    public void throwsOnTooShortSecret() {
+        assertThrows(IllegalArgumentException.class, () -> new CompoundSecret("23456"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void throwsOnInvalidTOTPPart() throws Exception {
-        CompoundSecret secret = new CompoundSecret("pass12XX56");
+        assertThrows(IllegalArgumentException.class, () -> new CompoundSecret("pass12XX56"));
     }
 }

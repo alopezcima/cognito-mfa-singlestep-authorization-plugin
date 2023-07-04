@@ -17,7 +17,7 @@
 package cd.go.authorization.cognitomfasinglestep.executor;
 
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class GetCapabilitiesExecutorTest {
@@ -29,7 +29,7 @@ public class GetCapabilitiesExecutorTest {
         String expectedJSON = "{\n" +
             "    \"supported_auth_type\":\"password\",\n" +
             "    \"can_search\":false,\n" +
-            "    \"can_authorize\":false,\n" +
+            "    \"can_authorize\":true,\n" +
             "    \"can_get_user_roles\":false\n" +
             "}";
 

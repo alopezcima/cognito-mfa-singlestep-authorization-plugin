@@ -18,77 +18,21 @@ package cd.go.authorization.cognitomfasinglestep.command;
 
 import cd.go.authorization.cognitomfasinglestep.cognito.CognitoSingleStepLoginManager;
 import cd.go.authorization.cognitomfasinglestep.model.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedConstruction;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-@PrepareForTest(Authenticator.class)
-@RunWith(PowerMockRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AuthenticatorTest {
-
-    @Test
-    public void shouldAuthenticate() {
-        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(user);
-
-        AuthenticationResponse response = authenticator.authenticate(credentials, Arrays.asList(cognitoAuthConfig));
-
-        assertThat(response)
-            .isNotNull();
-        assertThat(response.getUser())
-            .isEqualTo(user);
-        assertThat(response.getConfigUsedForAuthentication())
-            .isEqualTo(cognitoAuthConfig);
-    }
-
-    @Test
-    public void shouldNotAuthenticate() throws Exception {
-        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(null);
-        assertThat(authenticator.authenticate(credentials, Arrays.asList(cognitoAuthConfig)))
-            .isNull();
-    }
-
-    @Test
-    public void shouldNotAuthenticateIfCredentialsNotContainsTOPT() {
-        when(credentials.getPassword()).thenReturn(BAD_SECRET);
-        assertThat(authenticator.authenticate(credentials, Arrays.asList(cognitoAuthConfig)))
-            .isNull();
-        verify(loginManager, never()).login(any(), any(), any());
-    }
-
-    @Test
-    public void shouldNotAuthenticateIfCognitoConfigNotFound() {
-        assertThat(authenticator.authenticate(credentials, Arrays.asList(otherAuthConfig)))
-            .isNull();
-    }
-
-    @Before
-    public void setup() throws Exception {
-        when(otherAuthConfig.getId()).thenReturn("other");
-
-        when(cognitoAuthConfig.getId()).thenReturn("cognito");
-        when(cognitoAuthConfig.getConfiguration()).thenReturn(configuration);
-        when(configuration.getClientId()).thenReturn(CLIENT_ID);
-        when(configuration.getRegionName()).thenReturn(REGION);
-
-        when(credentials.getPassword()).thenReturn(SECRET);
-        when(credentials.getUsername()).thenReturn(USERNAME);
-
-        whenNew(CognitoSingleStepLoginManager.class).withAnyArguments().thenReturn(loginManager);
-
-        this.authenticator = new Authenticator();
-    }
-
     @Mock
     private Credentials credentials;
 
@@ -96,19 +40,12 @@ public class AuthenticatorTest {
     private User user;
 
     @Mock
-    private AuthConfig cognitoAuthConfig, otherAuthConfig;
+    private AuthConfig cognitoAuthConfig;
 
     @Mock
     private Configuration configuration;
 
-    @Mock
     private CognitoSingleStepLoginManager loginManager;
-
-    @Mock
-    private List<AuthConfig> authConfigs;
-
-    @Mock
-    private CompoundSecret compoundSecret;
 
     private Authenticator authenticator;
 
@@ -119,4 +56,60 @@ public class AuthenticatorTest {
     private static final String TOTP = "123456";
     private static final String CLIENT_ID = "client-id";
     private static final String REGION = "aws-region";
+
+    @Test
+    public void shouldAuthenticate() {
+        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(Optional.of(user));
+
+        Optional<AuthenticationResponse> response = authenticator.authenticate(credentials);
+
+        assertThat(response)
+            .isNotEmpty()
+            .get()
+            .extracting(AuthenticationResponse::getUser)
+            .isEqualTo(user);
+    }
+
+    @Test
+    public void shouldNotAuthenticate() throws Exception {
+        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(Optional.empty());
+        assertThat(authenticator.authenticate(credentials))
+            .isEmpty();
+    }
+
+    @Test
+    public void shouldNotAuthenticateIfCredentialsNotContainsTOPT() throws Exception {
+        when(credentials.getPassword()).thenReturn(BAD_SECRET);
+        assertThat(authenticator.authenticate(credentials))
+            .isEmpty();
+
+        try (MockedConstruction<CompoundSecret> mocked = mockConstructionWithAnswer(CompoundSecret.class, invocation -> {
+            throw new IllegalArgumentException();
+        })) {
+            verify(loginManager, never()).login(any(), any(), any());
+        }
+    }
+
+    @Test
+    public void shouldNotAuthenticateIfCognitoConfigNotFound() {
+        assertThat(authenticator.authenticate(credentials))
+            .isEmpty();
+    }
+
+    @BeforeEach
+    public void setup() {
+        when(cognitoAuthConfig.getConfiguration()).thenReturn(configuration);
+        when(configuration.getClientId()).thenReturn(CLIENT_ID);
+        when(configuration.getRegionName()).thenReturn(REGION);
+
+        when(credentials.getPassword()).thenReturn(SECRET);
+        lenient().when(credentials.getUsername()).thenReturn(USERNAME);
+
+
+        try (MockedConstruction<CognitoSingleStepLoginManager> mocked = mockConstruction(CognitoSingleStepLoginManager.class, (mock, context) -> {
+            this.loginManager = mock;
+        })) {
+            authenticator = new Authenticator(cognitoAuthConfig);
+        }
+    }
 }

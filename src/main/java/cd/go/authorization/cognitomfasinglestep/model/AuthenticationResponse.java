@@ -16,20 +16,37 @@
 
 package cd.go.authorization.cognitomfasinglestep.model;
 
-public class AuthenticationResponse {
-    private User user;
-    private AuthConfig configUsedForAuthentication;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
-    public AuthenticationResponse(User user, AuthConfig configUsedForAuthentication) {
+import java.util.Collection;
+import java.util.Collections;
+
+import static cd.go.authorization.cognitomfasinglestep.utils.Util.GSON;
+
+public class AuthenticationResponse {
+    @Expose
+    @SerializedName("user")
+    private final User user;
+
+    @Expose
+    @SerializedName("roles")
+    private final Collection<String> roles;
+
+    public AuthenticationResponse(User user, Collection<String> roles) {
         this.user = user;
-        this.configUsedForAuthentication = configUsedForAuthentication;
+        this.roles = Collections.unmodifiableCollection(roles);
     }
 
     public User getUser() {
         return user;
     }
 
-    public AuthConfig getConfigUsedForAuthentication() {
-        return configUsedForAuthentication;
+    public Collection<String> getRoles() {
+        return roles;
+    }
+
+    public String toJson() {
+        return GSON.toJson(this);
     }
 }

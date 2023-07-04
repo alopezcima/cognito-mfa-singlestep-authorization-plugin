@@ -31,6 +31,7 @@ public class GetAuthConfigMetadataExecutor implements RequestExecutor {
 
     public GoPluginApiResponse execute() throws Exception {
         final List<ProfileMetadata> authConfigMetadata = MetadataHelper.getMetadata(Configuration.class);
-        return new DefaultGoPluginApiResponse(200, GSON.toJson(authConfigMetadata));
+        String json = GSON.toJson(authConfigMetadata);
+        return new DefaultGoPluginApiResponse(200, json);
     }
 }

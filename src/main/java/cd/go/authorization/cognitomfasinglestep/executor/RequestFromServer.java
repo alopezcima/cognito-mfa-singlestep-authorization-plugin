@@ -18,22 +18,25 @@ package cd.go.authorization.cognitomfasinglestep.executor;
 
 public enum RequestFromServer {
 
-    REQUEST_GET_PLUGIN_ICON(Constants.REQUEST_PREFIX + ".get-icon"),
-    REQUEST_GET_CAPABILITIES(Constants.REQUEST_PREFIX + ".get-capabilities"),
-    REQUEST_GET_USER_ROLES(Constants.REQUEST_PREFIX + ".get-user-roles"),
-    IS_VALID_USER(Constants.REQUEST_PREFIX + ".is-valid-user"),
+    REQUEST_GET_PLUGIN_ICON("go.cd.authorization.get-icon"),
+    REQUEST_GET_CAPABILITIES("go.cd.authorization.get-capabilities"),
+    REQUEST_GET_USER_ROLES("go.cd.authorization.get-user-roles"),
+    IS_VALID_USER("go.cd.authorization.is-valid-user"),
 
-    REQUEST_GET_AUTH_CONFIG_METADATA(String.join(".", Constants.REQUEST_PREFIX, Constants._AUTH_CONFIG_METADATA, "get-metadata")),
-    REQUEST_AUTH_CONFIG_VIEW(String.join(".", Constants.REQUEST_PREFIX, Constants._AUTH_CONFIG_METADATA, "get-view")),
-    REQUEST_VALIDATE_AUTH_CONFIG(String.join(".", Constants.REQUEST_PREFIX, Constants._AUTH_CONFIG_METADATA, "validate")),
-    REQUEST_VERIFY_CONNECTION(String.join(".", Constants.REQUEST_PREFIX, Constants._AUTH_CONFIG_METADATA, "verify-connection")),
+    REQUEST_GET_AUTH_CONFIG_METADATA("go.cd.authorization.auth-config.get-metadata"),
+    REQUEST_AUTH_CONFIG_VIEW("go.cd.authorization.auth-config.get-view"),
+    REQUEST_VALIDATE_AUTH_CONFIG("go.cd.authorization.auth-config.validate"),
+    REQUEST_VERIFY_CONNECTION("go.cd.authorization.auth-config.verify-connection"),
 
-    REQUEST_GET_ROLE_CONFIG_METADATA(String.join(".", Constants.REQUEST_PREFIX, Constants._ROLE_CONFIG_METADATA, "get-metadata")),
-    REQUEST_ROLE_CONFIG_VIEW(String.join(".", Constants.REQUEST_PREFIX, Constants._ROLE_CONFIG_METADATA, "get-view")),
-    REQUEST_VALIDATE_ROLE_CONFIG(String.join(".", Constants.REQUEST_PREFIX, Constants._ROLE_CONFIG_METADATA, "validate")),
+    REQUEST_GET_ROLE_CONFIG_METADATA("go.cd.authorization.role-config.get-metadata"),
+    REQUEST_ROLE_CONFIG_VIEW("go.cd.authorization.role-config.get-view"),
+    REQUEST_VALIDATE_ROLE_CONFIG("go.cd.authorization.role-config.validate"),
 
-    REQUEST_AUTHENTICATE_USER(Constants.REQUEST_PREFIX + ".authenticate-user"),
-    REQUEST_SEARCH_USERS(Constants.REQUEST_PREFIX + ".search-users");
+    REQUEST_AUTHENTICATE_USER("go.cd.authorization.authenticate-user"),
+    REQUEST_SEARCH_USERS("go.cd.authorization.search-users"),
+
+    REQUEST_FETCH_ACCESS_TOKEN("go.cd.authorization.fetch-access-token"),
+    REQUEST_GET_CONFIGURATION("go.plugin-settings.get-configuration");
 
     private final String requestName;
 
@@ -55,12 +58,6 @@ public enum RequestFromServer {
 
     public String requestName() {
         return requestName;
-    }
-
-    private interface Constants {
-        String REQUEST_PREFIX = "go.cd.authorization";
-        String _AUTH_CONFIG_METADATA = "auth-config";
-        String _ROLE_CONFIG_METADATA = "role-config";
     }
 }
 
