@@ -53,7 +53,7 @@ public class CognitoMFASingleStepPlugin implements GoPlugin {
                 case REQUEST_GET_AUTH_CONFIG_METADATA:
                     return new GetAuthConfigMetadataExecutor().execute();
                 case REQUEST_GET_ROLE_CONFIG_METADATA:
-                    return new DefaultGoPluginApiResponse(200, "[]");
+                    return new GetRoleConfigMetadataExecutor(request).execute();
                 case REQUEST_AUTH_CONFIG_VIEW:
                     return new GetAuthConfigViewExecutor().execute();
                 case REQUEST_ROLE_CONFIG_VIEW:
