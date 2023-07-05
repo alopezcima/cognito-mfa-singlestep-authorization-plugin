@@ -30,7 +30,7 @@ public class Authenticator {
 
     public Authenticator(AuthConfig authConfig) {
         Configuration config = authConfig.getConfiguration();
-        loginManager = new CognitoSingleStepLoginManager(config.getUserPoolId(), config.getClientId(), config.getAppSecret(), config.getRegionName());
+        loginManager = new CognitoSingleStepLoginManager(config.getUserPoolId(), config.getClientId(), config.getAppSecret(), config.getRegionName(), config.getExecutionRoleARN());
     }
 
     public Optional<AuthenticationResponse> authenticate(Credentials credentials) {

@@ -18,3 +18,8 @@
     <input ng-class="{'is-invalid-input': GOINPUTNAME[RegionName].$error.server}" type="text" ng-model="RegionName" ng-required="true" placeholder="value"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[RegionName].$error.server}" ng-show="GOINPUTNAME[RegionName].$error.server">{{GOINPUTNAME[RegionName].$error.server}}</span>
 </div>
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[ExecutionRoleARN].$error.server}">ExecutionRoleARN</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[ExecutionRoleARN].$error.server}" type="text" ng-model="ExecutionRoleARN" ng-required="true" placeholder="value"/>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[ExecutionRoleARN].$error.server}" ng-show="GOINPUTNAME[ExecutionRoleARN].$error.server">{{GOINPUTNAME[ExecutionRoleARN].$error.server}}</span>
+</div>

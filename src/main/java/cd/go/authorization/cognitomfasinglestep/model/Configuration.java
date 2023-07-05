@@ -49,6 +49,11 @@ public class Configuration {
     @ProfileField(key = "RegionName", required = true, secure = false)
     private String regionName;
 
+    @Expose
+    @SerializedName("ExecutionRoleARN")
+    @ProfileField(key = "ExecutionRoleARN", required = false, secure = false)
+    private String executionRoleARN;
+
     public static Configuration fromJSON(String json) {
         return GSON.fromJson(json, Configuration.class);
     }
@@ -69,8 +74,8 @@ public class Configuration {
         return regionName;
     }
 
-    public AWSCognitoIdentityProvider getCognitoIDPProvider() {
-        return AWSCognitoIdentityProviderClientBuilder.standard().withRegion(this.regionName).build();
+    public String getExecutionRoleARN() {
+        return executionRoleARN;
     }
 
     public static List<Map<String, String>> validate(Map<String, String> properties) {

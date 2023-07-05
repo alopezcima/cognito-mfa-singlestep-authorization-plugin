@@ -24,7 +24,6 @@ import com.thoughtworks.go.plugin.api.annotation.Extension;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
-import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import static cd.go.authorization.cognitomfasinglestep.Constants.PLUGIN_IDENTIFIER;
@@ -49,7 +48,7 @@ public class CognitoMFASingleStepPlugin implements GoPlugin {
                 case REQUEST_GET_CAPABILITIES:
                     return new GetCapabilitiesExecutor().execute();
                 case REQUEST_GET_CONFIGURATION:
-                    return new GetConfigurationPropertiesExector().execute();
+                    return new GetConfigurationPropertiesExecutor().execute();
                 case REQUEST_GET_AUTH_CONFIG_METADATA:
                     return new GetAuthConfigMetadataExecutor().execute();
                 case REQUEST_GET_ROLE_CONFIG_METADATA:
@@ -57,7 +56,7 @@ public class CognitoMFASingleStepPlugin implements GoPlugin {
                 case REQUEST_AUTH_CONFIG_VIEW:
                     return new GetAuthConfigViewExecutor().execute();
                 case REQUEST_ROLE_CONFIG_VIEW:
-                    return new DefaultGoPluginApiResponse(200, "{\"template\": \"<div>some html</div>\"}");
+                    return new GetRoleConfigViewExecutor(request).execute();
                 case REQUEST_VALIDATE_AUTH_CONFIG:
                     return new AuthConfigValidateRequestExecutor(request).execute();
                 case REQUEST_VERIFY_CONNECTION:
