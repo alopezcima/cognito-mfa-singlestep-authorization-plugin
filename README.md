@@ -9,7 +9,7 @@ GoCD plugin for Cognito User Pools. Allowing TOTP MFA authentication in a single
 Start GoCD with the following environment variable set:
 
 ```plain
-GOCD_PLUGIN_INSTALL_cognito-mfa-singlestep-authorization=https://github.com/BBVA/cognito-mfa-singlestep-authorization-plugin/releases/download/v0.0.1/cognito-mfa-singlestep-authorization-plugin-0.0.1.jar
+GOCD_PLUGIN_INSTALL_cognito-mfa-singlestep-authorization=https://github.com/BBVA/cognito-mfa-singlestep-authorization-plugin/releases/download/v0.2.2/cognito-mfa-singlestep-authorization-plugin-0.2.2.jar
 ```
 
 ## Plugin Configuration
@@ -20,26 +20,40 @@ Alternatively you can set the configuration in `cruise-config.xml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="124">
-  <server ...>
-    <security>
-      <authConfigs>
-        <authConfig id="cognito" pluginId="cd.go.authorization.cognito-mfa-singlestep">
-          <property>
-            <key>ClientId</key>
-            <value>...</value>
-          </property>
-          <property>
-            <key>RegionName</key>
-            <value>...</value>
-          </property>
-        </authConfig>
-      </authConfigs>
-    </security>
-    <backup emailOnSuccess="true" emailOnFailure="true" />
-  </server>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd"
+        schemaVersion="124">
+    <server>
+        <security>
+            <authConfigs>
+                <authConfig id="cognito" pluginId="cd.go.authorization.cognito-mfa-singlestep">
+                    <property>
+                        <key>ClientId</key>
+                        <value>...</value>
+                    </property>
+                    <property>
+                        <key>RegionName</key>
+                        <value>...</value>
+                    </property>
+                    <property>
+                        <key>AppSecret</key>
+                        <value>...</value>
+                    </property>
+                    <property>
+                        <key>UserPoolId</key>
+                        <value>...</value>
+                    </property>
+                    <property>
+                        <key>ExecutionRoleARN</key>
+                        <value>...</value>
+                    </property>
+                </authConfig>
+            </authConfigs>
+        </security>
+        <backup emailOnSuccess="true" emailOnFailure="true"/>
+    </server>
 </cruise>
 ```
+
 With the proper values for:
 
 - *ClientId*: Should match the *App client id* of your Cognito User Pool App.
@@ -56,7 +70,8 @@ Also the Cognito User Pool App must:
 
 - Have *Enabled Identity Providers* **checked**.
 - Have *Enable username-password (non-SRP) flow for app-based authentication (USER_PASSWORD_AUTH)* **checked**.
-- Have the *App client secret* **not set**. This can be achieved by **not checking** *Generate client secret* at creation time.
+- Have the *App client secret* **not set**. This can be achieved by **not checking** *Generate client secret* at
+  creation time.
 
 ## Usage
 

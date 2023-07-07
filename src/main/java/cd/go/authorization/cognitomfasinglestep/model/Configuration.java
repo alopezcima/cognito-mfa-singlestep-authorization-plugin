@@ -35,6 +35,11 @@ public class Configuration {
     private String clientId;
 
     @Expose
+    @SerializedName("RegionName")
+    @ProfileField(key = "RegionName", required = true, secure = false)
+    private String regionName;
+
+    @Expose
     @SerializedName("AppSecret")
     @ProfileField(key = "AppSecret", required = false, secure = true)
     private String appSecret;
@@ -43,11 +48,6 @@ public class Configuration {
     @SerializedName("UserPoolId")
     @ProfileField(key = "UserPoolId", required = false, secure = false)
     private String userPoolId;
-
-    @Expose
-    @SerializedName("RegionName")
-    @ProfileField(key = "RegionName", required = true, secure = false)
-    private String regionName;
 
     @Expose
     @SerializedName("ExecutionRoleARN")
