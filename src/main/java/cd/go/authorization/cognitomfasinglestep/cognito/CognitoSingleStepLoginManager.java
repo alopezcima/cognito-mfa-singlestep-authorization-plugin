@@ -110,8 +110,8 @@ public class CognitoSingleStepLoginManager {
         authRequest.setClientId(cognitoClientId);
         authRequest.addAuthParametersEntry("USERNAME", user);
         authRequest.addAuthParametersEntry("PASSWORD", password);
-        String secretHash = this.calculateSecretHash(user);
-        authRequest.addAuthParametersEntry("SECRET_HASH", secretHash);
+        this.calculateSecretHash(user)
+            .map(secretHash -> authRequest.addAuthParametersEntry("SECRET_HASH", secretHash));
 
         try {
             return cognitoIDPClient.initiateAuth(authRequest);
@@ -120,7 +120,10 @@ public class CognitoSingleStepLoginManager {
         }
     }
 
-    private String calculateSecretHash(String userName) {
+    private Optional<String> calculateSecretHash(String userName) {
+        if (this.appSecret == null) {
+            return Optional.empty();
+        }
         SecretKeySpec signingKey = new SecretKeySpec(
             appSecret.getBytes(StandardCharsets.UTF_8),
             "HmacSHA256");
@@ -129,7 +132,7 @@ public class CognitoSingleStepLoginManager {
             mac.init(signingKey);
             mac.update(userName.getBytes(StandardCharsets.UTF_8));
             byte[] rawHmac = mac.doFinal(cognitoClientId.getBytes(StandardCharsets.UTF_8));
-            return Base64.encodeAsString(rawHmac);
+            return Optional.of(Base64.encodeAsString(rawHmac));
         } catch (Exception e) {
             throw new RuntimeException("Error while calculating ");
         }
@@ -141,8 +144,9 @@ public class CognitoSingleStepLoginManager {
         challengeRequest.setSession(session);
         challengeRequest.setClientId(cognitoClientId);
         challengeRequest.addChallengeResponsesEntry("USERNAME", user);
-        challengeRequest.addChallengeResponsesEntry("SECRET_HASH", this.calculateSecretHash(user));
         challengeRequest.addChallengeResponsesEntry("SOFTWARE_TOKEN_MFA_CODE", totp);
+        this.calculateSecretHash(user)
+            .map(secretHash -> challengeRequest.addChallengeResponsesEntry("SECRET_HASH", secretHash));
 
         try {
             return cognitoIDPClient.respondToAuthChallenge(challengeRequest);

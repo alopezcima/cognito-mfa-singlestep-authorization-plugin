@@ -36,7 +36,7 @@ public class Configuration {
 
     @Expose
     @SerializedName("AppSecret")
-    @ProfileField(key = "AppSecret", required = true, secure = true)
+    @ProfileField(key = "AppSecret", required = false, secure = true)
     private String appSecret;
 
     @Expose

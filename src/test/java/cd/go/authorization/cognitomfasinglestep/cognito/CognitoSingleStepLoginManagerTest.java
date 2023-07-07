@@ -17,7 +17,6 @@
 package cd.go.authorization.cognitomfasinglestep.cognito;
 
 import cd.go.authorization.cognitomfasinglestep.exception.InvalidCognitoUserStateException;
-import cd.go.authorization.cognitomfasinglestep.model.Configuration;
 import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +43,13 @@ public class CognitoSingleStepLoginManagerTest {
     private CognitoSingleStepLoginManager client;
 
     @Mock
-    private Configuration config;
-    @Mock
     private AWSCognitoIdentityProvider cognitoProvider;
+
+    @Mock
+    private InitiateAuthResult initAuthResponse;
+
+    @Mock
+    private RespondToAuthChallengeResult responseToChallengeResult;
 
     @Test
     public void loginShouldReturnNullWhenUserNotFound() {
@@ -66,9 +69,8 @@ public class CognitoSingleStepLoginManagerTest {
 
     @Test
     public void loginShouldThrowInvalidUserStateIfNotConfigured() {
-        InitiateAuthResult auth = mock(InitiateAuthResult.class);
-        when(cognitoProvider.initiateAuth(any())).thenReturn(auth);
-        when(auth.getChallengeName()).thenReturn("MFA_SETUP");
+        when(cognitoProvider.initiateAuth(any())).thenReturn(initAuthResponse);
+        when(initAuthResponse.getChallengeName()).thenReturn("MFA_SETUP");
 
         assertThrows(InvalidCognitoUserStateException.class, () -> client.login(USERNAME, PASSWORD, TOTP));
     }
@@ -85,7 +87,40 @@ public class CognitoSingleStepLoginManagerTest {
     @Test
     public void loginShouldReturnCognitoUserRequest() {
         assertThat(client.login(USERNAME, PASSWORD, TOTP))
-            .isNotEmpty();
+            .isNotEmpty()
+            .get()
+            .matches(user -> user.getUsername().equals(USERNAME));
+    }
+
+    @Test
+    public void itShouldNotUsedSecretHashWhenTheApplicationSecretIsNotSet() {
+        client = new CognitoSingleStepLoginManager(COGNITO_POOL_ID, COGNITO_CLIENT_ID, null, cognitoProvider);
+        when(cognitoProvider.initiateAuth(argThat(request -> {
+            if (request == null) {
+                return false;
+            }
+            assertThat(request.getClientId()).isEqualTo(COGNITO_CLIENT_ID);
+            assertThat(request.getAuthParameters().get("USERNAME")).isEqualTo(USERNAME);
+            assertThat(request.getAuthParameters().get("PASSWORD")).isEqualTo(PASSWORD);
+            assertThat(request.getAuthParameters().get("SECRET_HASH")).isNull();
+            return true;
+        }))).thenReturn(initAuthResponse);
+        when(cognitoProvider.respondToAuthChallenge(argThat(request -> {
+            if (request == null) {
+                return false;
+            }
+            assertThat(request.getClientId()).isEqualTo(COGNITO_CLIENT_ID);
+            assertThat(request.getChallengeName()).isEqualTo("SOFTWARE_TOKEN_MFA");
+            assertThat(request.getChallengeResponses().get("USERNAME")).isEqualTo(USERNAME);
+            assertThat(request.getChallengeResponses().get("SECRET_HASH")).isNull();
+            assertThat(request.getChallengeResponses().get("SOFTWARE_TOKEN_MFA_CODE")).isEqualTo(TOTP);
+            return true;
+        }))).thenReturn(responseToChallengeResult);
+
+        assertThat(client.login(USERNAME, PASSWORD, TOTP))
+            .isNotEmpty()
+            .get()
+            .matches(user -> user.getUsername().equals(USERNAME));
     }
 
     @BeforeEach
@@ -95,7 +130,6 @@ public class CognitoSingleStepLoginManagerTest {
 
     @BeforeEach
     public void setupCognitoProvier() {
-        InitiateAuthResult initAuthResponse = mock(InitiateAuthResult.class);
         lenient().when(initAuthResponse.getChallengeName()).thenReturn("SOFTWARE_TOKEN_MFA");
 
         lenient().when(cognitoProvider.initiateAuth(argThat(request -> {
@@ -109,7 +143,6 @@ public class CognitoSingleStepLoginManagerTest {
             return true;
         }))).thenReturn(initAuthResponse);
 
-        RespondToAuthChallengeResult responseToChallengeResult = mock(RespondToAuthChallengeResult.class);
         lenient().when(responseToChallengeResult.getChallengeName()).thenReturn(null);
         AuthenticationResultType authenticationResult = mock(AuthenticationResultType.class);
         lenient().when(responseToChallengeResult.getAuthenticationResult()).thenReturn(authenticationResult);
@@ -121,6 +154,7 @@ public class CognitoSingleStepLoginManagerTest {
             assertThat(request.getClientId()).isEqualTo(COGNITO_CLIENT_ID);
             assertThat(request.getChallengeName()).isEqualTo("SOFTWARE_TOKEN_MFA");
             assertThat(request.getChallengeResponses().get("USERNAME")).isEqualTo(USERNAME);
+            assertThat(request.getChallengeResponses().get("SECRET_HASH")).isEqualTo(SECRET_HASH);
             assertThat(request.getChallengeResponses().get("SOFTWARE_TOKEN_MFA_CODE")).isEqualTo(TOTP);
             return true;
         }))).thenReturn(responseToChallengeResult);
