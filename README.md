@@ -58,6 +58,9 @@ With the proper values for:
 
 - *ClientId*: Should match the *App client id* of your Cognito User Pool App.
 - *RegionName*: The name of the AWS region where your User Pool lives. i.e. *eu-west-1*
+- *AppSecret*: The Cognito User Poll App Secret. This parameter is optional, and it must be set if the Cognito Application Client has a secret.
+- *UserPoolId*: The Cognito User Pool ID. The parameter is optional, and it is used only if the GoCD Plugin validate GoCD authentication tokens.
+- *ExecutionRoleARN*: The AWS role to be assumed when execution AWS commands. This parameter is optional, and it used only to validate GoCD authentication tokens and the default AWS user role does not have permission to execute read Cognito commands.
 
 ## Cognito Configuration
 
@@ -70,8 +73,6 @@ Also the Cognito User Pool App must:
 
 - Have *Enabled Identity Providers* **checked**.
 - Have *Enable username-password (non-SRP) flow for app-based authentication (USER_PASSWORD_AUTH)* **checked**.
-- Have the *App client secret* **not set**. This can be achieved by **not checking** *Generate client secret* at
-  creation time.
 
 ## Usage
 
