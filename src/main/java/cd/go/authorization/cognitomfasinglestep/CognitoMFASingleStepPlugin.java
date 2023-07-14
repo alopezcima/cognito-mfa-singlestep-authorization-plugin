@@ -59,6 +59,8 @@ public class CognitoMFASingleStepPlugin implements GoPlugin {
                     return new GetRoleConfigViewExecutor(request).execute();
                 case REQUEST_VALIDATE_AUTH_CONFIG:
                     return new AuthConfigValidateRequestExecutor(request).execute();
+                case REQUEST_VALIDATE_ROLE_CONFIG:
+                    return new RoleConfigValidateRequestExecutor(request).execute();
                 case REQUEST_VERIFY_CONNECTION:
                     return new VerifyConnectionRequestExecutor(request).execute();
                 case REQUEST_AUTHENTICATE_USER:

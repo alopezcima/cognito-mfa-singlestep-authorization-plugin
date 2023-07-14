@@ -17,6 +17,7 @@
 package cd.go.authorization.cognitomfasinglestep.command;
 
 import cd.go.authorization.cognitomfasinglestep.cognito.CognitoSingleStepLoginManager;
+import cd.go.authorization.cognitomfasinglestep.cognito.UserRolePredicate;
 import cd.go.authorization.cognitomfasinglestep.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,11 @@ import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
+import static java.lang.Boolean.TRUE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -43,11 +47,15 @@ public class AuthenticatorTest {
     private AuthConfig cognitoAuthConfig;
 
     @Mock
+    private RoleConfig roleConfig;
+
+    @Mock
+    private RoleConfiguration roleConfiguration;
+
+    @Mock
     private Configuration configuration;
 
     private CognitoSingleStepLoginManager loginManager;
-
-    private Authenticator authenticator;
 
     private static final String SECRET = "password123456";
     private static final String BAD_SECRET = "password";
@@ -56,10 +64,35 @@ public class AuthenticatorTest {
     private static final String TOTP = "123456";
     private static final String CLIENT_ID = "client-id";
     private static final String REGION = "aws-region";
+    private static final String ROLE_NAME = "test-role";
+    private static final String MEMBER_OF = "test-group";
+
+    @Test
+    public void shouldInitializeTheCognitoPluginWithTheRolesPredicates() {
+        when(roleConfig.getName()).thenReturn(ROLE_NAME);
+        when(roleConfig.getRoleConfiguration()).thenReturn(roleConfiguration);
+        when(roleConfiguration.getMemberOf()).thenReturn(MEMBER_OF);
+
+        try (MockedConstruction<CognitoSingleStepLoginManager> mocked = mockConstruction(CognitoSingleStepLoginManager.class, (mock, context) -> {
+            Collection<UserRolePredicate> predicates = (Collection<UserRolePredicate>) context.arguments().get(5);
+            assertThat(predicates)
+                .hasSize(1)
+                .allMatch(predicate -> {
+                    assertThat(predicate.getRole())
+                        .isEqualTo(ROLE_NAME);
+                    assertThat(predicate.test("test-group"))
+                        .isTrue();
+                    return TRUE;
+                });
+        })) {
+            new Authenticator(cognitoAuthConfig, List.of(roleConfig));
+        }
+    }
 
     @Test
     public void shouldAuthenticate() {
-        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(Optional.of(user));
+        Authenticator authenticator = newAuthenticator();
+        when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(Optional.of(new AuthenticationResponse(user, List.of())));
 
         Optional<AuthenticationResponse> response = authenticator.authenticate(credentials);
 
@@ -72,13 +105,15 @@ public class AuthenticatorTest {
 
     @Test
     public void shouldNotAuthenticate() throws Exception {
+        Authenticator authenticator = newAuthenticator();
         when(loginManager.login(USERNAME, PASSWORD, TOTP)).thenReturn(Optional.empty());
         assertThat(authenticator.authenticate(credentials))
             .isEmpty();
     }
 
     @Test
-    public void shouldNotAuthenticateIfCredentialsNotContainsTOPT() throws Exception {
+    public void shouldNotAuthenticateIfCredentialsNotContainsTOPT() {
+        Authenticator authenticator = newAuthenticator();
         when(credentials.getPassword()).thenReturn(BAD_SECRET);
         assertThat(authenticator.authenticate(credentials))
             .isEmpty();
@@ -92,6 +127,7 @@ public class AuthenticatorTest {
 
     @Test
     public void shouldNotAuthenticateIfCognitoConfigNotFound() {
+        Authenticator authenticator = newAuthenticator();
         assertThat(authenticator.authenticate(credentials))
             .isEmpty();
     }
@@ -102,14 +138,15 @@ public class AuthenticatorTest {
         when(configuration.getClientId()).thenReturn(CLIENT_ID);
         when(configuration.getRegionName()).thenReturn(REGION);
 
-        when(credentials.getPassword()).thenReturn(SECRET);
+        lenient().when(credentials.getPassword()).thenReturn(SECRET);
         lenient().when(credentials.getUsername()).thenReturn(USERNAME);
+    }
 
-
+    private Authenticator newAuthenticator() {
         try (MockedConstruction<CognitoSingleStepLoginManager> mocked = mockConstruction(CognitoSingleStepLoginManager.class, (mock, context) -> {
             this.loginManager = mock;
         })) {
-            authenticator = new Authenticator(cognitoAuthConfig);
+            return new Authenticator(cognitoAuthConfig, List.of(roleConfig));
         }
     }
 }

@@ -18,6 +18,7 @@ package cd.go.authorization.cognitomfasinglestep.cognito;
 
 import cd.go.authorization.cognitomfasinglestep.exception.InvalidCognitoUserCredentialsException;
 import cd.go.authorization.cognitomfasinglestep.exception.InvalidCognitoUserStateException;
+import cd.go.authorization.cognitomfasinglestep.model.AuthenticationResponse;
 import cd.go.authorization.cognitomfasinglestep.model.User;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
@@ -27,30 +28,33 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder
 import com.amazonaws.services.cognitoidp.model.*;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.util.Base64;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static cd.go.authorization.cognitomfasinglestep.CognitoMFASingleStepPlugin.LOG;
+import static cd.go.authorization.cognitomfasinglestep.utils.Util.GSON;
 
 public class CognitoSingleStepLoginManager {
     private final AWSCognitoIdentityProvider cognitoIDPClient;
     private final String cognitoClientId;
     private final String userPoolId;
     private final String appSecret;
+    private final Collection<UserRolePredicate> rolePredicates;
 
-    public CognitoSingleStepLoginManager(String userPoolId, String clientId, String appSecret, String regionName, String executionRole) {
-        this(userPoolId, clientId, appSecret, getCognitoClientIDP(createCredentialsProvider(executionRole, regionName), regionName));
+    public CognitoSingleStepLoginManager(String userPoolId, String clientId, String appSecret, String regionName, String executionRole, Collection<UserRolePredicate> rolePredicates) {
+        this(userPoolId, clientId, appSecret, rolePredicates, getCognitoClientIDP(createCredentialsProvider(executionRole, regionName), regionName));
     }
 
-    CognitoSingleStepLoginManager(String userPoolId, String clientId, String appSecret, AWSCognitoIdentityProvider cognitoIDPClient) {
+    CognitoSingleStepLoginManager(String userPoolId, String clientId, String appSecret, Collection<UserRolePredicate> rolePredicates, AWSCognitoIdentityProvider cognitoIDPClient) {
         this.userPoolId = userPoolId;
         this.cognitoClientId = clientId;
         this.appSecret = appSecret;
+        this.rolePredicates = rolePredicates;
         this.cognitoIDPClient = cognitoIDPClient;
     }
 
@@ -69,7 +73,7 @@ public class CognitoSingleStepLoginManager {
         return AWSCognitoIdentityProviderClientBuilder.standard().withRegion(regionName).withCredentials(credentialsProvider).build();
     }
 
-    public Optional<User> login(String user, String password, String totp) {
+    public Optional<AuthenticationResponse> login(String user, String password, String totp) {
         // NOTE: This try-catch block shouldn't be split.
         // To ensure we comply with PCI information disclosure policy this block erase the information about which of
         // the steps taken in the authentication process actually fails.
@@ -82,14 +86,34 @@ public class CognitoSingleStepLoginManager {
             if (login.getChallengeName() != null) {
                 throw new InvalidCognitoUserStateException("Unexpected challenge: " + auth.getChallengeName());
             }
+            AuthenticationResultType authenticationResult = login.getAuthenticationResult();
             GetUserRequest userRequest = new GetUserRequest();
-            userRequest.setAccessToken(login.getAuthenticationResult().getAccessToken());
+            userRequest.setAccessToken(authenticationResult.getAccessToken());
             LOG.info("Cognito authentication succeeded for user: " + user);
-            return Optional.of(new User(cognitoIDPClient.getUser(userRequest)));
+            return Optional.of(new AuthenticationResponse(new User(cognitoIDPClient.getUser(userRequest)), userGroupToRoles(getUserGroups(authenticationResult.getIdToken()))));
         } catch (InvalidCognitoUserCredentialsException e) {
             LOG.error("Cognito authentication failed for user: " + user);
             return Optional.empty();
+
         }
+    }
+
+    private Collection<String> userGroupToRoles(Collection<String> userGroups) {
+        return rolePredicates.stream()
+            .filter(rolePredicate -> userGroups.stream().anyMatch(rolePredicate::test))
+            .map(UserRolePredicate::getRole)
+            .collect(Collectors.toSet());
+    }
+
+    private Collection<String> getUserGroups(String idToken) {
+        Map<String, Object> jwtToken = parseJWTToken(idToken);
+        return (Collection<String>) jwtToken.getOrDefault("cognito:groups", List.of());
+    }
+
+    private Map<String, Object> parseJWTToken(String idToken) {
+        String[] parts = idToken.split("\\.");
+        String payload = new String(Base64.getDecoder().decode(parts[1]), UTF_8);
+        return GSON.fromJson(payload, Map.class);
     }
 
     public boolean isValidUser(String user) {
@@ -132,7 +156,7 @@ public class CognitoSingleStepLoginManager {
             mac.init(signingKey);
             mac.update(userName.getBytes(StandardCharsets.UTF_8));
             byte[] rawHmac = mac.doFinal(cognitoClientId.getBytes(StandardCharsets.UTF_8));
-            return Optional.of(Base64.encodeAsString(rawHmac));
+            return Optional.of(Base64.getEncoder().encodeToString(rawHmac));
         } catch (Exception e) {
             throw new RuntimeException("Error while calculating ");
         }
@@ -154,4 +178,6 @@ public class CognitoSingleStepLoginManager {
             throw new InvalidCognitoUserCredentialsException("Invalid TOTP");
         }
     }
+
+    private static Charset UTF_8 = Charset.forName("UTF-8");
 }

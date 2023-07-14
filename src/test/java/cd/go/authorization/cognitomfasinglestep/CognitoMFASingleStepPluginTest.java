@@ -1,6 +1,9 @@
 package cd.go.authorization.cognitomfasinglestep;
 
 import cd.go.authorization.cognitomfasinglestep.executor.IsValidUserRequestExecutor;
+import cd.go.authorization.cognitomfasinglestep.executor.RoleConfigValidateRequestExecutor;
+import cd.go.authorization.cognitomfasinglestep.executor.UserAuthenticationExecutor;
+import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.junit.jupiter.api.Test;
@@ -23,10 +26,18 @@ public class CognitoMFASingleStepPluginTest {
     @Mock
     private GoPluginApiRequest request;
 
-    private IsValidUserRequestExecutor executor;
+    @Test
+    public void it_should_authenticate_an_user() throws UnhandledRequestTypeException {
+        try (MockedConstruction<UserAuthenticationExecutor> mocked = mockConstruction(UserAuthenticationExecutor.class, this::setupExecutor)) {
+            when(request.requestName()).thenReturn("go.cd.authorization.authenticate-user");
+
+            assertThat(plugin.handle(request))
+                .isEqualTo(answer);
+        }
+    }
 
     @Test
-    public void it_should_validate_an_user() throws Exception {
+    public void it_should_validate_an_user() throws UnhandledRequestTypeException {
         try (MockedConstruction<IsValidUserRequestExecutor> mocked = mockConstruction(IsValidUserRequestExecutor.class, this::setupExecutor)) {
             when(request.requestName()).thenReturn("go.cd.authorization.is-valid-user");
 
@@ -35,8 +46,25 @@ public class CognitoMFASingleStepPluginTest {
         }
     }
 
+    @Test
+    public void it_should_validate_a_role_config() throws UnhandledRequestTypeException {
+        try (MockedConstruction<RoleConfigValidateRequestExecutor> mocked = mockConstruction(RoleConfigValidateRequestExecutor.class, this::setupExecutor)) {
+            when(request.requestName()).thenReturn("go.cd.authorization.role-config.validate");
+
+            assertThat(plugin.handle(request))
+                .isEqualTo(answer);
+        }
+    }
+
+    private void setupExecutor(UserAuthenticationExecutor mock, MockedConstruction.Context context) throws Exception {
+        when(mock.execute()).thenReturn(answer);
+    }
+
     private void setupExecutor(IsValidUserRequestExecutor mock, MockedConstruction.Context context) {
-        this.executor = mock;
-        when(executor.execute()).thenReturn(answer);
+        when(mock.execute()).thenReturn(answer);
+    }
+
+    private void setupExecutor(RoleConfigValidateRequestExecutor mock, MockedConstruction.Context context) throws Exception {
+        when(mock.execute()).thenReturn(answer);
     }
 }

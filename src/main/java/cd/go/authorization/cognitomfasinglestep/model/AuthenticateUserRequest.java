@@ -14,6 +14,10 @@ public class AuthenticateUserRequest {
     private Collection<AuthConfig> authConfigs;
 
     @Expose
+    @SerializedName("role_configs")
+    private Collection<RoleConfig> roleConfigs;
+
+    @Expose
     @SerializedName("credentials")
     private Credentials credentials;
 
@@ -27,6 +31,10 @@ public class AuthenticateUserRequest {
 
     public Collection<AuthConfig> getAuthConfigs() {
         return authConfigs;
+    }
+
+    public Collection<RoleConfig> getRoleConfigs() {
+        return roleConfigs;
     }
 
     public Credentials getCredentials() {

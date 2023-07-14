@@ -17,30 +17,44 @@
 package cd.go.authorization.cognitomfasinglestep.command;
 
 import cd.go.authorization.cognitomfasinglestep.cognito.CognitoSingleStepLoginManager;
-import cd.go.authorization.cognitomfasinglestep.model.AuthConfig;
-import cd.go.authorization.cognitomfasinglestep.model.AuthenticationResponse;
-import cd.go.authorization.cognitomfasinglestep.model.Configuration;
-import cd.go.authorization.cognitomfasinglestep.model.Credentials;
+import cd.go.authorization.cognitomfasinglestep.cognito.UserRolePredicate;
+import cd.go.authorization.cognitomfasinglestep.model.*;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class Authenticator {
     private final CognitoSingleStepLoginManager loginManager;
 
     public Authenticator(AuthConfig authConfig) {
+        this(authConfig, List.of());
+    }
+
+    public Authenticator(AuthConfig authConfig, Collection<RoleConfig> roleConfigs) {
         Configuration config = authConfig.getConfiguration();
-        loginManager = new CognitoSingleStepLoginManager(config.getUserPoolId(), config.getClientId(), config.getAppSecret(), config.getRegionName(), config.getExecutionRoleARN());
+        loginManager = new CognitoSingleStepLoginManager(config.getUserPoolId(), config.getClientId(), config.getAppSecret(), config.getRegionName(), config.getExecutionRoleARN(), buildRolePredicates(roleConfigs));
     }
 
     public Optional<AuthenticationResponse> authenticate(Credentials credentials) {
         try {
             CompoundSecret secret = new CompoundSecret(credentials.getPassword());
-            return loginManager.login(credentials.getUsername(), secret.getPassword(), secret.getTOTP())
-                .map(user -> new AuthenticationResponse(user, new ArrayList<>()));
+            return loginManager.login(credentials.getUsername(), secret.getPassword(), secret.getTOTP());
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    private Collection<UserRolePredicate> buildRolePredicates(Collection<RoleConfig> roleConfigs) {
+        return roleConfigs.stream()
+            .map(roleConfig -> new UserRolePredicate(roleConfig.getName()) {
+                @Override
+                public boolean test(String userGroup) {
+                    return userGroup.equals(roleConfig.getRoleConfiguration().getMemberOf());
+                }
+            })
+            .collect(Collectors.toList());
     }
 
     public boolean existUser(String username) {

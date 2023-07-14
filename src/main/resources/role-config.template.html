@@ -1,1 +1,5 @@
-<div>Not implemented yet</div>
+<div class="form_item_block">
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[MemberOf].$error.server}">Member of User Group</label>
+    <textarea ng-class="{'is-invalid-input': GOINPUTNAME[MemberOf].$error.server}" type="text" ng-model="MemberOf" ng-required="true" placeholder="value"></textarea>
+    <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[MemberOf].$error.server}" ng-show="GOINPUTNAME[MemberOf].$error.server">{{GOINPUTNAME[MemberOf].$error.server}}</span>
+</div>

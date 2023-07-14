@@ -1,6 +1,6 @@
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[ClientId].$error.server}">User Pool Id</label>
-    <input ng-class="{'is-invalid-input': GOINPUTNAME[ClientId].$error.server}" type="text" ng-model="UserPoolId" ng-required="true" placeholder="value"/>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[UserPoolId].$error.server}">User Pool Id</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[UserPoolId].$error.server}" type="text" ng-model="UserPoolId" ng-required="false" placeholder="value"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[UserPoolId].$error.server}" ng-show="GOINPUTNAME[UserPoolId].$error.server">{{GOINPUTNAME[UserPoolId].$error.server}}</span>
 </div>
 <div class="form_item_block">
@@ -9,17 +9,17 @@
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[ClientId].$error.server}" ng-show="GOINPUTNAME[ClientId].$error.server">{{GOINPUTNAME[ClientId].$error.server}}</span>
 </div>
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[ClientId].$error.server}">Application Secret</label>
-    <input ng-class="{'is-invalid-input': GOINPUTNAME[ClientId].$error.server}" type="text" ng-model="AppSecret" ng-required="true" placeholder="value"/>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[AppSecret].$error.server}">Application Secret</label>
+    <input ng-class="{'is-invalid-input': GOINPUTNAME[AppSecret].$error.server}" type="text" ng-model="AppSecret" ng-required="false" placeholder="value"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[AppSecret].$error.server}" ng-show="GOINPUTNAME[AppSecret].$error.server">{{GOINPUTNAME[AppSecret].$error.server}}</span>
 </div>
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[RegionName].$error.server}">RegionName</label>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[RegionName].$error.server}">Region Name</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[RegionName].$error.server}" type="text" ng-model="RegionName" ng-required="true" placeholder="value"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[RegionName].$error.server}" ng-show="GOINPUTNAME[RegionName].$error.server">{{GOINPUTNAME[RegionName].$error.server}}</span>
 </div>
 <div class="form_item_block">
-    <label ng-class="{'is-invalid-label': GOINPUTNAME[ExecutionRoleARN].$error.server}">ExecutionRoleARN</label>
+    <label ng-class="{'is-invalid-label': GOINPUTNAME[ExecutionRoleARN].$error.server}">Execution Role ARN</label>
     <input ng-class="{'is-invalid-input': GOINPUTNAME[ExecutionRoleARN].$error.server}" type="text" ng-model="ExecutionRoleARN" ng-required="true" placeholder="value"/>
     <span class="form_error form-error" ng-class="{'is-visible': GOINPUTNAME[ExecutionRoleARN].$error.server}" ng-show="GOINPUTNAME[ExecutionRoleARN].$error.server">{{GOINPUTNAME[ExecutionRoleARN].$error.server}}</span>
 </div>

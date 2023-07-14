@@ -23,6 +23,8 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
+import java.util.stream.Collectors;
+
 import static com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse.SUCCESS_RESPONSE_CODE;
 
 public class UserAuthenticationExecutor implements RequestExecutor {
@@ -37,7 +39,7 @@ public class UserAuthenticationExecutor implements RequestExecutor {
     public GoPluginApiResponse execute() throws Exception {
         return request.getAuthConfigs().stream()
             .filter(authConfig -> authConfig.getId().equals(COGNITO_AUTH_CONFIG))
-            .map(Authenticator::new)
+            .map(authConfig -> new Authenticator(authConfig, request.getRoleConfigs().stream().filter(roleConfig -> roleConfig.getAuthConfigId().equals(COGNITO_AUTH_CONFIG)).collect(Collectors.toList())))
             .flatMap(authenticator -> authenticator.authenticate(request.getCredentials()).stream())
             .map(authenticationResponse -> new DefaultGoPluginApiResponse(SUCCESS_RESPONSE_CODE, authenticationResponse.toJson()))
             .findFirst()

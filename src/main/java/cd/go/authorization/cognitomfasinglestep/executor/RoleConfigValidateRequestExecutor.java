@@ -23,7 +23,6 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.List;
-import java.util.Map;
 
 public class RoleConfigValidateRequestExecutor implements RequestExecutor {
     private static final Gson GSON = new Gson();
@@ -34,10 +33,12 @@ public class RoleConfigValidateRequestExecutor implements RequestExecutor {
     }
 
     @Override
-    public GoPluginApiResponse execute() throws Exception {
-        Map<String, String> properties = GSON.fromJson(request.requestBody(), Map.class);
+    public GoPluginApiResponse execute() {
+        RoleConfiguration configuration = RoleConfiguration.fromJSON(request.requestBody());
+        if (configuration == null || configuration.getMemberOf() == null) {
+            return new DefaultGoPluginApiResponse(400);
+        }
 
-        final List<Map<String, String>> validationResult = RoleConfiguration.validate(properties);
-        return DefaultGoPluginApiResponse.success(GSON.toJson(validationResult));
+        return new DefaultGoPluginApiResponse(200, GSON.toJson(List.of()));
     }
 }

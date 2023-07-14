@@ -16,60 +16,57 @@
 
 package cd.go.authorization.cognitomfasinglestep.executor;
 
-import com.google.gson.Gson;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
+import java.util.Map;
 
-import static org.mockito.Mockito.mock;
+import static cd.go.authorization.cognitomfasinglestep.utils.Util.GSON;
+import static org.assertj.core.api.Assertions.as;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class RoleConfigValidateRequestExecutorTest {
+    @Mock
     private GoPluginApiRequest request;
+    private RoleConfigValidateRequestExecutor executor;
 
     @BeforeEach
-    public void setup() throws Exception {
-        request = mock(GoPluginApiRequest.class);
+    public void setup() {
+        this.executor = new RoleConfigValidateRequestExecutor(request);
     }
 
     @Test
-    public void shouldBarfWhenUnknownKeysArePassed() throws Exception {
-        when(request.requestBody()).thenReturn(new Gson().toJson(Collections.singletonMap("foo", "bar")));
-
-        GoPluginApiResponse response = new RoleConfigValidateRequestExecutor(request).execute();
-        String json = response.responseBody();
-
-        String expectedJSON = "[\n" +
-            "  {\n" +
-            "    \"message\": \"ExampleField must not be blank.\",\n" +
-            "    \"key\": \"ExampleField\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"key\": \"foo\",\n" +
-            "    \"message\": \"Is an unknown property\"\n" +
-            "  }\n" +
-            "]";
-        JSONAssert.assertEquals(expectedJSON, json, JSONCompareMode.NON_EXTENSIBLE);
+    public void it_should_return_not_null() {
+        when(request.requestBody()).thenReturn("");
+        assertThat(executor.execute())
+            .isNotNull();
     }
 
     @Test
-    public void shouldValidateMandatoryKeys() throws Exception {
-        when(request.requestBody()).thenReturn(new Gson().toJson(Collections.emptyMap()));
+    public void it_should_return_a_request_error_if_the_request_is_invalid() throws Exception {
+        when(request.requestBody()).thenReturn("{\"field\":\"no-valid\"}");
+        assertThat(executor.execute())
+            .extracting(GoPluginApiResponse::responseCode)
+            .isEqualTo(400);
+    }
 
-        GoPluginApiResponse response = new RoleConfigValidateRequestExecutor(request).execute();
-        String json = response.responseBody();
-
-        String expectedJSON = "[\n" +
-            "  {\n" +
-            "    \"message\": \"ExampleField must not be blank.\",\n" +
-            "    \"key\": \"ExampleField\"\n" +
-            "  }\n" +
-            "]";
-        JSONAssert.assertEquals(expectedJSON, json, JSONCompareMode.NON_EXTENSIBLE);
+    @Test
+    public void it_should_return_ok_with_a_valid_role_configuration() {
+        when(request.requestBody()).thenReturn("{\"MemberOf\": \"tester\"}");
+        GoPluginApiResponse response = executor.execute();
+        assertThat(response)
+            .extracting(GoPluginApiResponse::responseCode)
+            .isEqualTo(200);
+        assertThat(response)
+            .extracting(GoPluginApiResponse::responseBody)
+            .isEqualTo("[]");
     }
 }

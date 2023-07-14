@@ -31,6 +31,6 @@ public class GetCapabilitiesExecutor {
     }
 
     Capabilities getCapabilities() {
-        return new Capabilities(SupportedAuthType.Password, false, true, false);
+        return new Capabilities(SupportedAuthType.Password, false, true, true);
     }
 }

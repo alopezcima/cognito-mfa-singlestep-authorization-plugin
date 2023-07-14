@@ -23,6 +23,7 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Objects;
 
 import static cd.go.authorization.cognitomfasinglestep.utils.Util.GSON;
 
@@ -64,8 +65,8 @@ public class RoleConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RoleConfig that = (RoleConfig) o;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        return roleConfiguration != null ? roleConfiguration.equals(that.roleConfiguration) : that.roleConfiguration == null;
+        if (!Objects.equals(name, that.name)) return false;
+        return Objects.equals(roleConfiguration, that.roleConfiguration);
     }
 
     @Override
